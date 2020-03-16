@@ -10,7 +10,7 @@ function getRandomInt(min, max) {
 
 var grid = 16;
 var count = 0;
-var nextFrame = false;
+var nextFrame = true;
 
 var snake = {
   x: 160,
@@ -36,21 +36,25 @@ var apple = {
 function loop() {
   requestAnimationFrame(loop);
 
-  // slow game loop to 15 fps instead of 60 (60/15 = 4)
-  /*if (++count < 12) {
-    return;
-  }*/
-
   if (!nextFrame && count > 4) {
       return;
   }
 
   if (count < 4) {
-      count++;
+    count++;
+    DrawFrame();
+  } else {
+    setTimeout(NextFrame, 5000)
+    SelectWinner();
+    nextFrame = false;
   }
+}
 
-  //count = 0;
-  nextFrame = false;
+function NextFrame() {
+  nextFrame = true;
+}
+
+function DrawFrame() {
   context.clearRect(0,0,canvas.width,canvas.height);
 
   // move snake by it's velocity
@@ -121,35 +125,57 @@ function loop() {
 }
 
 // listen to keyboard events to move the snake
-/*
-document.addEventListener('keydown', function(e) {
+function SelectWinner() {
   // prevent snake from backtracking on itself by checking that it's
   // not already moving on the same axis (pressing left while moving
   // left won't do anything, and pressing right while moving left
   // shouldn't let you collide with your own body)
 
-  // left arrow key
-  if (e.which === 37 && snake.dx === 0) {
-    snake.dx = -grid;
-    snake.dy = 0;
-  }
-  // up arrow key
-  else if (e.which === 38 && snake.dy === 0) {
-    snake.dy = -grid;
-    snake.dx = 0;
-  }
-  // right arrow key
-  else if (e.which === 39 && snake.dx === 0) {
-    snake.dx = grid;
-    snake.dy = 0;
-  }
-  // down arrow key
-  else if (e.which === 40 && snake.dy === 0) {
-    snake.dy = grid;
-    snake.dx = 0;
-  }
-});
-*/
+  SE_API.counters.get('Votes').then(counter => {
+    let _win = counter.indexOf(Math.max(...counter))
+
+    switch(_win) {
+      case 0:
+        // right arrow key
+        if (snake.dx === 0) {
+          snake.dx = grid;
+          snake.dy = 0;
+        }
+      break;
+      case 1:
+        // left arrow key
+        if (snake.dx === 0) {
+          snake.dx = -grid;
+          snake.dy = 0;
+        }
+      break;
+      case 2:
+        // up arrow key
+        if (snake.dy === 0) {
+          snake.dy = -grid;
+          snake.dx = 0;
+        }
+      break;
+      case 3:
+        // down arrow key
+        if (snake.dy === 0) {
+          snake.dy = grid;
+          snake.dx = 0;
+        }
+      break;
+      default:
+        if (snake.dx === 0) {
+          snake.dx = grid;
+          snake.dy = 0;
+        }
+      break;
+    }
+
+    DrawFrame();
+    ResetVotes();
+  });
+}
+
 window.addEventListener('onEventReceived', function (obj) {
     const data = obj["detail"]["event"];
     const msg = data["message"]
@@ -178,35 +204,13 @@ window.addEventListener('onEventReceived', function (obj) {
 });
 
 function ResetVotes() {
-    SE_API.store.set('rightVote', 0); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
-    SE_API.store.set('leftVote', 0); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
-    SE_API.store.set('upVote', 0); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
-    SE_API.store.set('downVote', 0); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
+    SE_API.store.set('Votes', new Array(4)); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
 }
 
 function Vote(_n) {
-    switch(_n) {
-        case 0:
-            SE_API.counters.get('rightVote').then(counter => {
-                SE_API.store.set('rightVote', counter + 1); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
-            });
-        break;
-        case 1:
-            SE_API.counters.get('leftVote').then(counter => {
-                SE_API.store.set('leftVote', counter + 1); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
-            });
-        break;
-        case 2:
-            SE_API.counters.get('upVote').then(counter => {
-                SE_API.store.set('upVote', counter + 1); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
-            });
-        break;
-        case 3:
-            SE_API.counters.get('downVote').then(counter => {
-                SE_API.store.set('downVote', counter + 1); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
-            });
-        break;
-    }
+  SE_API.counters.get('Votes').then(counter => {
+      SE_API.store.set('Votes', counter[_n] += 1); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
+  });
 }
 
 // start the game
