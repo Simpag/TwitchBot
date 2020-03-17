@@ -2,7 +2,7 @@
   "frameInterval": {
     "type": "number",
     "label": "Time Between Frames (ms)",
-    "value": 5000
+    "value": 4000
   },
   "fontFamily": {
     "type": "googleFont",
@@ -13,5 +13,10 @@
     "type": "number",
     "label": "Font Size",
     "value": 15
+  },
+  "boardSize": {
+    "type": "number",
+    "label": "Size Of Board (ms)",
+    "value": 200
   }
 }

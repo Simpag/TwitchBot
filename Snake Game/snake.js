@@ -17,6 +17,7 @@ var upVotes = 0;
 var downVotes = 0;
 
 const frameInterval = {frameInterval}; // Time between votes/frames in ms
+const boardSize = {boardSize};
 
 var snake = {
   x: 160,
@@ -34,8 +35,8 @@ var snake = {
 };
 
 var apple = {
-  x: getRandomInt(0, 25) * grid,
-  y: getRandomInt(0, 25) * grid
+  x: getRandomInt(0, boardSize/grid) * grid,
+  y: getRandomInt(0, boardSize/grid) * grid
 };
 
 // game loop
@@ -114,8 +115,8 @@ function DrawFrame() {
         snake.dx = grid;
         snake.dy = 0;
 
-        apple.x = getRandomInt(0, 25) * grid;
-        apple.y = getRandomInt(0, 25) * grid;
+        apple.x = getRandomInt(0, boardSize/grid) * grid;
+        apple.y = getRandomInt(0, boardSize/grid) * grid;
       }
     }
   });
