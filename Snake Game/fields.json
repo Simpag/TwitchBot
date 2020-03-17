@@ -1,0 +1,7 @@
+{
+  "frameInterval": {
+    "type": "number",
+    "label": "Time between frames (ms)",
+    "value": 5000
+  }
+}

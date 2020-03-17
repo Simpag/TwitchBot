@@ -10,7 +10,12 @@ function getRandomInt(min, max) {
 
 var grid = 16;
 var count = 0;
-var nextFrame = true;
+var rightVotes = 0;
+var leftVotes = 0;
+var upVotes = 0;
+var downVotes = 0;
+
+const frameInterval = {frameInterval}; // Time between votes/frames in ms
 
 var snake = {
   x: 160,
@@ -34,24 +39,14 @@ var apple = {
 
 // game loop
 function loop() {
-  requestAnimationFrame(loop);
-
-  if (!nextFrame && count > 4) {
-      return;
-  }
-
   if (count < 4) {
     count++;
+    requestAnimationFrame(loop);
     DrawFrame();
   } else {
-    setTimeout(NextFrame, 5000)
+    setTimeout(loop, frameInterval);
     SelectWinner();
-    nextFrame = false;
   }
-}
-
-function NextFrame() {
-  nextFrame = true;
 }
 
 function DrawFrame() {
@@ -124,58 +119,63 @@ function DrawFrame() {
   });
 }
 
+
+
 // listen to keyboard events to move the snake
 function SelectWinner() {
   // prevent snake from backtracking on itself by checking that it's
   // not already moving on the same axis (pressing left while moving
   // left won't do anything, and pressing right while moving left
   // shouldn't let you collide with your own body)
+  //console.log("Selecting winner");
 
-  SE_API.counters.get('Votes').then(counter => {
-    let _win = counter.indexOf(Math.max(...counter))
+  let _tmp = [rightVotes, leftVotes, upVotes, downVotes];
+  let _win = _tmp.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
 
-    switch(_win) {
-      case 0:
-        // right arrow key
-        if (snake.dx === 0) {
-          snake.dx = grid;
-          snake.dy = 0;
-        }
-      break;
-      case 1:
-        // left arrow key
-        if (snake.dx === 0) {
-          snake.dx = -grid;
-          snake.dy = 0;
-        }
-      break;
-      case 2:
-        // up arrow key
-        if (snake.dy === 0) {
-          snake.dy = -grid;
-          snake.dx = 0;
-        }
-      break;
-      case 3:
-        // down arrow key
-        if (snake.dy === 0) {
-          snake.dy = grid;
-          snake.dx = 0;
-        }
-      break;
-      default:
-        if (snake.dx === 0) {
-          snake.dx = grid;
-          snake.dy = 0;
-        }
-      break;
-    }
+  if (_win == 0 && _tmp[0] == 0) {
+    _win = -1;
+  }
 
-    DrawFrame();
-    ResetVotes();
-  });
+  //console.log("Winner is: " + _win.toString());
+
+  switch(_win) {
+    case 0:
+      // right
+      if (snake.dx === 0) {
+        snake.dx = grid;
+        snake.dy = 0;
+      }
+    break;
+    case 1:
+      // left
+      if (snake.dx === 0) {
+        snake.dx = -grid;
+        snake.dy = 0;
+      }
+    break;
+    case 2:
+      // up
+      if (snake.dy === 0) {
+        snake.dy = -grid;
+        snake.dx = 0;
+      }
+    break;
+    case 3:
+      // down
+      if (snake.dy === 0) {
+        snake.dy = grid;
+        snake.dx = 0;
+      }
+    break;
+    default:
+      //console.log("No winning vote, continuing on the same path")
+    break;
+  }
+
+  DrawFrame();
+  ResetVotes();
 }
-console.log("HI");
+
 window.addEventListener('onEventReceived', function (obj) {
     const data = obj["detail"]["event"];
     const msg = data.renderedText
@@ -183,22 +183,25 @@ window.addEventListener('onEventReceived', function (obj) {
 
     if (msg[0] == '!') {
         isCommand = true;
-      	console.log("Is a command");
-      	console.log(msg);
+        //console.log("Is command: " + msg);
     }
 
     if (isCommand) {
         switch(msg) {
             case "!right":
+            case "!Right":
                 Vote(0);
             break;
             case "!left":
+            case "!Left":
                 Vote(1);
             break;
             case "!up":
+            case "!Up":
                 Vote(2);
             break;
             case "!down":
+            case "!Down":
                 Vote(3);
             break;
         }
@@ -206,13 +209,28 @@ window.addEventListener('onEventReceived', function (obj) {
 });
 
 function ResetVotes() {
-    SE_API.store.set('Votes', new Array(4)); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
+    //console.log("Resetting votes!");
+    rightVotes = 0;
+    leftVotes = 0;
+    upVotes = 0;
+    downVotes = 0;
 }
 
 function Vote(_n) {
-  SE_API.counters.get('Votes').then(counter => {
-      SE_API.store.set('Votes', counter[_n] += 1); // stores an object into our database under this keyName (multiple widgets using the same keyName will share the same data).
-  });
+  switch(_n) {
+    case 0:
+      rightVotes++;
+    break;
+    case 1:
+      leftVotes++;
+    break;
+    case 2:
+      upVotes++;
+    break;
+    case 3:
+      downVotes++;
+    break;
+  }
 }
 
 // start the game
