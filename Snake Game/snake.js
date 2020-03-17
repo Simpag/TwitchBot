@@ -175,14 +175,16 @@ function SelectWinner() {
     ResetVotes();
   });
 }
-
+console.log("HI");
 window.addEventListener('onEventReceived', function (obj) {
     const data = obj["detail"]["event"];
-    const msg = data["message"]
+    const msg = data.renderedText
     let isCommand = false;
 
     if (msg[0] == '!') {
         isCommand = true;
+      	console.log("Is a command");
+      	console.log(msg);
     }
 
     if (isCommand) {
