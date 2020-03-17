@@ -1,4 +1,5 @@
 var canvas = document.getElementById('game');
+var topVoteText = document.getElementById('topVote');
 var context = canvas.getContext('2d');
 ResetVotes();
 
@@ -45,7 +46,8 @@ function loop() {
     DrawFrame();
   } else {
     setTimeout(loop, frameInterval);
-    SelectWinner();
+    startProgressBar();
+    TurnSnake(SelectWinner());
   }
 }
 
@@ -138,38 +140,42 @@ function SelectWinner() {
 
   //console.log("Winner is: " + _win.toString());
 
-  switch(_win) {
+  return _win;
+}
+
+function TurnSnake(_dir) {
+  switch(_dir) {
     case 0:
       // right
       if (snake.dx === 0) {
         snake.dx = grid;
         snake.dy = 0;
       }
-    break;
+      break;
     case 1:
       // left
       if (snake.dx === 0) {
         snake.dx = -grid;
         snake.dy = 0;
       }
-    break;
+      break;
     case 2:
       // up
       if (snake.dy === 0) {
         snake.dy = -grid;
         snake.dx = 0;
       }
-    break;
+      break;
     case 3:
       // down
       if (snake.dy === 0) {
         snake.dy = grid;
         snake.dx = 0;
       }
-    break;
+      break;
     default:
       //console.log("No winning vote, continuing on the same path")
-    break;
+      break;
   }
 
   DrawFrame();
@@ -233,5 +239,42 @@ function Vote(_n) {
   }
 }
 
+function UpdateTopVote() {
+  switch(SelectWinner()) {
+    case 0:
+      topVoteText.innerHTML = "Top Vote: Right";
+    break;
+    case 1:
+      topVoteText.innerHTML = "Top Vote: Left";
+    break;
+    case 2:
+      topVoteText.innerHTML = "Top Vote: Up";
+    break;
+    case 3:
+      topVoteText.innerHTML = "Top Vote: Down";
+    break;
+  }
+}
+
 // start the game
 requestAnimationFrame(loop);
+setInterval(UpdateTopVote, frameInterval/6); //Check the top vote every second
+
+/*
+* Progress bar
+*/
+var myBar = document.getElementById("myBar");
+function startProgressBar() {
+  var width = 1;
+  var id = setInterval(frame, frameInterval/100);
+  function frame() {
+    if (width >= 100) {
+      clearInterval(id);
+      progress = 0;
+      myBar.style.width = 0 + "%";
+    } else {
+      width++;
+      myBar.style.width = width + "%";
+    }
+  }
+}

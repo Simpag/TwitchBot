@@ -1,7 +1,17 @@
 {
   "frameInterval": {
     "type": "number",
-    "label": "Time between frames (ms)",
+    "label": "Time Between Frames (ms)",
     "value": 5000
+  },
+  "fontFamily": {
+    "type": "googleFont",
+    "label": "Font family",
+    "value": "Happy Monkey"
+  },
+  "fontSize": {
+    "type": "number",
+    "label": "Font Size",
+    "value": 15
   }
 }
